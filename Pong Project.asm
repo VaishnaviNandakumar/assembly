@@ -14,12 +14,10 @@ ball dw 17,17,5,4,2,17,17
 lpad dw 5, 14, 7, 11, 05, 14    ; Left Paddle  
 rpad dw 5, 14, 7, 11, 44, 14    ; Right Paddle  
 
-player1 dw 0c03h
-player2 dw 0c00h  
-
-
+player1 dw 0c00h
+  
 s1 db 100,?, 100 dup(' ') 
-msg1  db  "enter any text: $"
+msg1  db  "Choose player theme: (1) Blue (2) Red (3) Magenta (4) Cyan (5) Green $"
 
 score dw 02h   
 
@@ -30,7 +28,7 @@ maindata:
     mov dx, offset msg1
     mov ah, 9
     int 21h
-    ; input a string:
+    
     
     mov ah, 1
     int 21h
@@ -45,7 +43,10 @@ maindata:
     jz colorMagenta 
     
     cmp al,34h
-    jz colorCyan
+    jz colorCyan     
+    
+    cmp al,35h
+    jz colorGreen
     
     colorBlue:   
     mov player1,0c01h   
@@ -56,11 +57,20 @@ maindata:
     jmp plot
     
     colorMagenta:  
-    mov player1,0c01h
+    mov player1,0c05h 
+    jmp plot
     
     colorCyan:
-    mov player1,0c0bh     
+    mov player1,0c0bh
+    jmp plot 
     
+    colorGreen:
+    mov player1,0c02h
+    jmp plot 
+    
+        
+                      
+                      
     
     
     ;SET BOUNDRY/PLAY AREA 

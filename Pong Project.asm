@@ -10,7 +10,11 @@ gameHeight dw 50
 ball dw 17,17,5,4,2,17,17     
 
 ;Order -  xpos, ypos, speed, length, newx, newy
-pad dw 5,14,7,11,5,14
+lpad dw 5,14,7,11,5,14      
+
+rpad dw 5, 14, 7, 11, 44, 14
+
+score dw 02h
 
 skipdata:
 
@@ -44,32 +48,60 @@ call horizontalBoundry
 mov cx, 0 
 
 mainloop:
-call drawPaddle
+    call drawPaddleL 
+    call drawPaddleR 
+    
     call drawBall
     call updateBall
-    call updatePad
-    call checkBall_Collision
-    loop mainloop
-    
+    call updatePadL     
+    call updatePadR    
+    call checkBall_CollisionR 
+    call checkBall_CollisionL  
+
+    cmp score, 00
+    jnz mainloop
+
+   
 ret 
+
 
 
 ;FUNCTIONS
 
 
 ;DRAWS PADDLE
-drawPaddle:
+drawPaddleL:
     push ax
     push bx
     push cx
     
-    mov ax, pad[0]
-    mov bx, pad[2]
-    mov cx, pad[6]
+    mov ax, lpad[0]
+    mov bx, lpad[2]
+    mov cx, lpad[6]
     call vert_line_unplot
     
-    mov ax, pad[8]
-    mov bx, pad[10]
+    mov ax, lpad[8]
+    mov bx, lpad[10]
+    call verticallBoundry
+    
+    pop cx
+    pop bx
+    pop ax
+    ret
+
+
+drawPaddleR:
+    push ax
+    push bx
+    push cx
+    
+    mov ax, rpad[0]
+    mov bx, rpad[2]
+    mov cx, rpad[6]
+    call vert_line_unplot
+    
+    mov ax, rpad[8]
+    mov bx, rpad[10]
     call verticallBoundry
     
     pop cx
@@ -160,7 +192,9 @@ updateBall:
     mov cx, ax
     add cx, ball[8]
     sub cx, gameWidth
-    cmp cx, 0
+    cmp cx, 0  
+    
+    
     jle updateX
     
     ;Update positions and negate velocity
@@ -229,17 +263,17 @@ updateBall:
 
 
 
-;Paddle position update
-updatePad:
+;Paddle position update  - Left
+updatePadL:
 push ax
 push bx
 
 ;New position update
-mov ax, pad[8]
-lea bx, pad[0]
+mov ax, lpad[8]
+lea bx, lpad[0]
 mov [bx], ax
-mov ax, pad[10]
-lea bx, pad[2]
+mov ax, lpad[10]
+lea bx, lpad[2]
 mov [bx], ax
 
 mov al, 0
@@ -261,33 +295,34 @@ int 16h
 cmp al, 00h
 jne donepu
 cmp ah, 48h
-je up
+je upL
 cmp ah, 50h
 jne donepu
 
 ;down
-mov ax, pad[2]
-add ax, pad[4]
+mov ax, lpad[2]
+add ax, lpad[4]
 
 ;Collision check
 mov bx, ax
-add bx, pad[6]
+add bx, lpad[6]
 dec bx
 cmp bx, gameHeight
-jl commit  
+jl commit 
+dec score 
 ;If no collision, commit changes in ypos to the object
 
 ;if collision, set paddle to maximum possible ypos
 mov bx, gameHeight
 dec bx
-sub bx, pad[6]
+sub bx, lpad[6]
 mov ax, bx
 jmp commit 
 ;then commit the changes
 
-up:
-mov ax, pad[2]
-sub ax, pad[4]
+upL:
+mov ax, lpad[2]
+sub ax, lpad[4]
 
 cmp ax, 0
 jg commit   
@@ -295,7 +330,7 @@ jg commit
 mov ax, 1 
 
 commit:
-lea bx, pad[10]
+lea bx, lpad[10]
 mov [bx], ax 
 
 donepu:
@@ -304,6 +339,79 @@ pop ax
 ret
 
 
+updatePadR:
+push ax
+push bx
+
+;New position update
+mov ax, rpad[8]
+lea bx, rpad[0]
+mov [bx], ax
+mov ax, rpad[10]
+lea bx, rpad[2]
+mov [bx], ax
+
+mov al, 0
+mov ah, 1
+
+;Check for character in keyboard buffer   
+;right arrow: 4D00h
+;left arrow:  4B00h         
+
+int 16h
+;No input, Ignore    
+jz donepu  
+
+
+mov ax, 0  
+;Get character input from keyboard buffer
+int 16h    
+
+cmp al, 00h
+jne donepuR
+cmp ah, 4dh
+je upR
+cmp ah, 4bh
+jne donepu
+
+;down
+mov ax, rpad[2]
+add ax, rpad[4]
+
+;Collision check
+mov bx, ax
+add bx, rpad[6]
+dec bx
+cmp bx, gameHeight
+jl commitR 
+dec score 
+;If no collision, commit changes in ypos to the object
+
+;if collision, set paddle to maximum possible ypos
+mov bx, gameHeight
+dec bx
+sub bx, rpad[6]
+mov ax, bx
+jmp commitR 
+;then commit the changes
+
+upR:
+mov ax, rpad[2]
+sub ax, rpad[4]
+
+cmp ax, 0
+jg commitR   
+;if there's a collision, simply set the ypos to 1
+mov ax, 1 
+
+commitR:
+lea bx, rpad[10]
+mov [bx], ax 
+
+donepuR:
+pop bx
+pop ax
+ret
 
 
 ;Check if ball hits paddle
@@ -325,14 +433,14 @@ ret
 ;negate ball[4], set ball[10]=pad[0]+1
 
 
-checkBall_Collision:
+checkBall_CollisionL:
 push ax
 push bx
 push cx
 
 cmp ball[4], 0
 jge donep         ;check that the ball is heading towards the pad
-mov ax, pad[0]
+mov ax, lpad[0]
 cmp ball[10], ax
 jg donep          ;check that the new position is behind the pad
 cmp ball[0], ax   
@@ -342,7 +450,7 @@ mov ax, ball[12]
 mov bx, ax
 add bx, ball[8]
 dec bx ;because the ball's size is absolute and includes the origin xpos
-mov cx, pad[10]
+mov cx, lpad[10]
 cmp ax, cx
 jg nextc          ;now, check for both y1 and y2 being under the pad's ypos
 cmp bx, cx
@@ -350,7 +458,7 @@ jl donep          ;if they both are, we're done
                   ;if not, go to nextc
 
 nextc:
-add cx, pad[6]
+add cx, lpad[6]
 dec cx ;again, length/size include the origin
 cmp ax, cx
 jg donep          ;since the ball's y values only increase from it's ypos, we can just 
@@ -364,7 +472,7 @@ lea bx, ball[4]
 neg ax
 mov [bx], ax     ;negate the x velocity
 
-mov ax, pad[0]
+mov ax, lpad[0]
 inc ax
 lea bx, ball[10]
 mov [bx], ax     ;set the ball's new xpos to in front of the pad
@@ -377,6 +485,58 @@ pop bx
 pop ax 
 ret
 
+
+checkBall_CollisionR:
+push ax
+push bx
+push cx
+
+cmp ball[4], 0
+jge donepr         ;check that the ball is heading towards the pad
+mov ax, rpad[0]
+cmp ball[10], ax
+jg donepr          ;check that the new position is behind the pad
+cmp ball[0], ax   
+jle donepr         ;check that the old ball position is in front of the pad
+
+mov ax, ball[12]
+mov bx, ax
+add bx, ball[8]
+dec bx ;because the ball's size is absolute and includes the origin xpos
+mov cx, rpad[10]
+cmp ax, cx
+jg nextcr          ;now, check for both y1 and y2 being under the pad's ypos
+cmp bx, cx
+jl donepr          ;if they both are, we're done
+                  ;if not, go to nextc
+
+nextcr:
+add cx, rpad[6]
+dec cx ;again, length/size include the origin
+cmp ax, cx
+jg donepr          ;since the ball's y values only increase from it's ypos, we can just 
+                  ;compare ypos to the pad's ending position
+                  
+;if after all of that, the ball did not make this function end, it means that it has
+;made contact with the pad's new position (approximately)
+
+mov ax, ball[4]
+lea bx, ball[4]
+neg ax
+mov [bx], ax     ;negate the x velocity
+
+mov ax, rpad[0]
+inc ax
+lea bx, ball[10]
+mov [bx], ax     ;set the ball's new xpos to in front of the pad
+
+inc dx           ;increment the score
+
+donepr:
+pop cx
+pop bx
+pop ax 
+ret
 
 
 
@@ -429,7 +589,8 @@ ret
 
 
 
-;plot a black rectangle function
+;plot a b
+;lack rectangle function
 ;ax - origin x
 ;bx - origin y
 ;cx - destination x
@@ -449,7 +610,7 @@ mov si, dx ;si stores the y
  
 mov cx, ax
 mov dx, bx
-mov ax, 0c03h ;the right-most hex char is the color of the rectangle
+mov ax, 0c00h ;the right-most hex char is the color of the rectangle   - change color to see path - 0c03h
 
 rect_loop2:
 int 10h ;draw a pixel

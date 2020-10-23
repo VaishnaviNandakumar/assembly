@@ -438,7 +438,10 @@ maindata:
         
         ;Sign of Velocity
         and bx, 8000h
-        jz checkPositiveX  
+        jz checkPositiveX     
+        
+        and bx, 8000h
+        jz checkPositiveRX  
         
         ;Collision Check
         cmp ax, 0    
@@ -468,7 +471,23 @@ maindata:
         neg cx
         lea bx, ball[4]
         mov [bx], cx 
+                      
+        checkPositiveRX:
+        mov cx, ax
+        add cx, ball[8]
+        sub cx, rpad[0]
+        cmp cx, 0  
+        jle updateX
         
+        ;Update positions and negate velocity
+        shl cx, 1
+        sub ax, cx
+        mov cx, ball[4]
+        neg cx
+        lea bx, ball[4]
+        mov [bx], cx        
+        
+               
         ;Update the new position
         updateX:
         lea bx, ball[10]
@@ -480,7 +499,10 @@ maindata:
         add ax, bx
         
         and bx, 8000h
-        jz checkPositiveY  
+        jz checkPositiveY   
+        
+        and bx, 8000h
+        jz checkPositiveRY  
         
         cmp ax, 0    
         jg updateY
@@ -497,6 +519,21 @@ maindata:
         mov cx, ax
         add cx, ball[8]
         sub cx, gameHeight
+        cmp cx, 0
+        jle updateY
+        
+        shl cx, 1
+        sub ax, cx
+        mov cx, ball[6]
+        neg cx
+        lea bx, ball[6]
+        mov [bx], cx  
+        
+               
+        checkPositiveRY:
+        mov cx, ax
+        add cx, ball[8]
+        sub cx, rpad[0]
         cmp cx, 0
         jle updateY
         
@@ -722,9 +759,7 @@ maindata:
         push ax
         push bx
         push cx
-        
-        cmp ball[4], 0
-        jle donepr         
+                 
         mov ax, rpad[0]
         cmp ball[10], ax
         jg donepr          

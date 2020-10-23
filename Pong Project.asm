@@ -105,11 +105,11 @@ maindata:
         call drawPaddleR 
         call drawBall
         call updateBall 
-        call updatePadL     
+        call updatePadL 
+        call checkBall_CollisionL     
         call updatePadR   
-        
         call checkBall_CollisionR 
-        call checkBall_CollisionL  
+        
     
         cmp score, 00
         jnz mainloop
@@ -459,8 +459,6 @@ maindata:
         add cx, ball[8]
         sub cx, gameWidth
         cmp cx, 0  
-        
-        
         jle updateX
         
         ;Update positions and negate velocity
@@ -692,7 +690,8 @@ maindata:
         cmp ax, cx
         jg nextc          ; To check for both y1 and y2 being under the pad's ypos
         cmp bx, cx
-        jl donep         
+        jl donep  
+               
         nextc:
         add cx, lpad[6]
         dec cx 
@@ -724,8 +723,8 @@ maindata:
         push bx
         push cx
         
-        cmp ball[6], 0
-        jge donepr         
+        cmp ball[4], 0
+        jle donepr         
         mov ax, rpad[0]
         cmp ball[10], ax
         jg donepr          
@@ -754,7 +753,7 @@ maindata:
         mov [bx], ax     
         
         mov ax, rpad[0]
-        dec ax
+        inc ax
         lea bx, ball[10]
         mov [bx], ax     
         

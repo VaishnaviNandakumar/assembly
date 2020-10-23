@@ -12,7 +12,7 @@ ball dw 17,17,5,4,2,17,17
 
 ;Order -  xpos, ypos, speed, length, newx, newy   
 lpad dw 5, 14, 7, 11, 05, 14    ; Left Paddle  
-rpad dw 5, 14, 7, 11, 44, 14    ; Right Paddle  
+rpad dw 5, 14, 7, 11, 48, 14    ; Right Paddle  
 
 player1 dw 0c00h
   
@@ -438,10 +438,7 @@ maindata:
         
         ;Sign of Velocity
         and bx, 8000h
-        jz checkPositiveX     
-        
-        and bx, 8000h
-        jz checkPositiveRX  
+        jz checkPositiveX  
         
         ;Collision Check
         cmp ax, 0    
@@ -471,23 +468,7 @@ maindata:
         neg cx
         lea bx, ball[4]
         mov [bx], cx 
-                      
-        checkPositiveRX:
-        mov cx, ax
-        add cx, ball[8]
-        sub cx, rpad[0]
-        cmp cx, 0  
-        jle updateX
         
-        ;Update positions and negate velocity
-        shl cx, 1
-        sub ax, cx
-        mov cx, ball[4]
-        neg cx
-        lea bx, ball[4]
-        mov [bx], cx        
-        
-               
         ;Update the new position
         updateX:
         lea bx, ball[10]
@@ -499,10 +480,7 @@ maindata:
         add ax, bx
         
         and bx, 8000h
-        jz checkPositiveY   
-        
-        and bx, 8000h
-        jz checkPositiveRY  
+        jz checkPositiveY  
         
         cmp ax, 0    
         jg updateY
@@ -519,21 +497,6 @@ maindata:
         mov cx, ax
         add cx, ball[8]
         sub cx, gameHeight
-        cmp cx, 0
-        jle updateY
-        
-        shl cx, 1
-        sub ax, cx
-        mov cx, ball[6]
-        neg cx
-        lea bx, ball[6]
-        mov [bx], cx  
-        
-               
-        checkPositiveRY:
-        mov cx, ax
-        add cx, ball[8]
-        sub cx, rpad[0]
         cmp cx, 0
         jle updateY
         
@@ -759,7 +722,9 @@ maindata:
         push ax
         push bx
         push cx
-                 
+        
+        cmp ball[4], 0
+        jle donepr         
         mov ax, rpad[0]
         cmp ball[10], ax
         jg donepr          
@@ -797,10 +762,5 @@ maindata:
         donepr:
         pop cx
         pop bx
-        pop ax 
+        pop ax
         ret
-        
-        
-        
-       
-       

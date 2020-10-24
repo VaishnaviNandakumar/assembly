@@ -11,7 +11,7 @@ gameHeight dw 50
 ball dw 17,17,5,4,2,17,17     
 
 ;Order -  xpos, ypos, speed, length, newx, newy   
-lpad dw 5, 14, 7, 11, 05, 14    ; Left Paddle  
+lpad dw 5, 14, 7, 11, 02, 14    ; Left Paddle  
 rpad dw 5, 14, 7, 11, 48, 14    ; Right Paddle  
 
 player1 dw 0c00h
@@ -111,8 +111,7 @@ maindata:
         call checkBall_CollisionR 
         
     
-        cmp score, 00
-        jnz mainloop
+    loop mainloop
     
        
     ret 

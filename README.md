@@ -7,12 +7,12 @@ A multiplayer game created using ASM
 
 ## Sample Outputs
 
-<b>Theme Selection Output Screen</b>
+#### Theme Selection Output Screen 
 ![Theme Selection](https://github.com/VaishnaviNandakumar/assembly/blob/master/images/themes.PNG)
 
-<b>Sample Theme outputs</b> (Cyan, Green, Magenta)
+#### Sample Theme outputs (Cyan, Green, Magenta)
 ![Theme Output](https://github.com/VaishnaviNandakumar/assembly/blob/master/images/theme_ouput.jpg)
 
-<b>Keyboard Buffer for Navigation</b>
+#### Keyboard Buffer for Navigation
 ![Keyboard Buffer](https://github.com/VaishnaviNandakumar/assembly/blob/master/images/keyboard_buffer.PNG)
 
